@@ -10,15 +10,19 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
-@Data
 @NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +31,10 @@ public class User {
     @Column(name = "username", unique = true)
     private String username;
     @OneToMany(mappedBy = "user")
-    private List<Order> orders;
+    private @ToString.Exclude @EqualsAndHashCode.Exclude List<Order> orders;
+
+    public User(Long userId, String username) {
+        this.userId = userId;
+        this.username = username;
+    }
 }

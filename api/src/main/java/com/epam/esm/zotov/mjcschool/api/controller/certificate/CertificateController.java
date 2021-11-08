@@ -2,10 +2,11 @@ package com.epam.esm.zotov.mjcschool.api.controller.certificate;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import com.epam.esm.zotov.mjcschool.api.controller.CrdController;
-import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
+import com.epam.esm.zotov.mjcschool.api.controller.CreateController;
+import com.epam.esm.zotov.mjcschool.api.controller.DeleteController;
+import com.epam.esm.zotov.mjcschool.api.controller.ReadController;
+import com.epam.esm.zotov.mjcschool.api.dto.CertificateDto;
 
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
  * Defines RESTful methods for the <code>Certificate</code> type.
  * <p>
  * 
- * @see CrdController
+ * @see ReadController
  */
-public interface CertificateController extends CrdController<Certificate> {
+public interface CertificateController
+        extends ReadController<CertificateDto>, CreateController<CertificateDto>, DeleteController {
     /**
      * Searches the certificates that fit desired criteria. If thereis no such
      * certificates, might return an error.
@@ -30,7 +32,7 @@ public interface CertificateController extends CrdController<Certificate> {
      */
     @RequestMapping(method = RequestMethod.GET, params = { "tagName", "name", "description", "sortByDate", "sortByName",
             "ASC", "DESC" })
-    List<Certificate> search(@RequestParam Map<String, String> searchParams);
+    List<CertificateDto> search(@RequestParam Map<String, String> searchParams);
 
     /**
      * Updates modifyed fields of <code>Certificate</code> in the data source with
@@ -41,5 +43,5 @@ public interface CertificateController extends CrdController<Certificate> {
      * @return <code>true</code> if object was successfuly updated
      */
     @PatchMapping(value = "/{targetId}")
-    Optional<Certificate> selectiveUpdate(@PathVariable long targetId, @RequestBody Certificate updatedCertificate);
+    CertificateDto selectiveUpdate(@PathVariable long targetId, @RequestBody CertificateDto updatedCertificate);
 }

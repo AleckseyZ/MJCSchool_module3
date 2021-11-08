@@ -43,8 +43,9 @@ public class LocalizedGeneralExceptionAdvice {
     }
 
     @ExceptionHandler({ TypeMismatchException.class, MissingServletRequestParameterException.class,
-            IllegalArgumentException.class, HttpMessageNotReadableException.class })
-    public ResponseEntity<RestExceptionResponse> badRequestHandler(Locale locale) {
+            IllegalArgumentException.class, HttpMessageNotReadableException.class,
+            HttpMediaTypeNotSupportedException.class })
+    public ResponseEntity<RestExceptionResponse> handleBadRequest(Locale locale) {
         RestExceptionResponse response = new RestExceptionResponse(messageSource.getMessage(error400, null, locale),
                 error400Code);
 
@@ -53,14 +54,6 @@ public class LocalizedGeneralExceptionAdvice {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<RestExceptionResponse> handleNoHandlerFoundException(Locale locale) {
-        RestExceptionResponse response = new RestExceptionResponse(messageSource.getMessage(error404, null, locale),
-                error404Code);
-
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<RestExceptionResponse> handleNotSupportedMediaTypeException(Locale locale) {
         RestExceptionResponse response = new RestExceptionResponse(messageSource.getMessage(error404, null, locale),
                 error404Code);
 

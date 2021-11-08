@@ -3,6 +3,7 @@ package com.epam.esm.zotov.mjcschool.api.exception.advice;
 import java.util.Locale;
 
 import com.epam.esm.zotov.mjcschool.api.exception.NoResourceFoundException;
+import com.epam.esm.zotov.mjcschool.api.exception.RequestNotExecutedException;
 import com.epam.esm.zotov.mjcschool.api.exception.RestExceptionResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,10 @@ public class LocalizedCustomExceptionAdvice {
     private String error4040;
     @Value("${error.code.4040}")
     private String error4040Code;
+    @Value("${error.msg.5001}")
+    private String error5001;
+    @Value("${error.code.5001}")
+    private String error5001Code;
     private MessageSource messageSource;
 
     @Autowired
@@ -32,10 +37,18 @@ public class LocalizedCustomExceptionAdvice {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<RestExceptionResponse> noResourceFoundHandle(Locale locale) {
+    public ResponseEntity<RestExceptionResponse> handleNoResourceFound(Locale locale) {
         RestExceptionResponse response = new RestExceptionResponse(messageSource.getMessage(error4040, null, locale),
                 error4040Code);
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RequestNotExecutedException.class)
+    public ResponseEntity<RestExceptionResponse> handleRequestNotExectued(Locale locale) {
+        RestExceptionResponse response = new RestExceptionResponse(messageSource.getMessage(error5001, null, locale),
+                error5001Code);
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -1,10 +1,15 @@
 package com.epam.esm.zotov.mjcschool.api.controller.certificate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+import com.epam.esm.zotov.mjcschool.api.dto.CertificateDto;
+import com.epam.esm.zotov.mjcschool.api.dto.ListDto;
 import com.epam.esm.zotov.mjcschool.api.exception.NoResourceFoundException;
+import com.epam.esm.zotov.mjcschool.api.exception.RequestNotExecutedException;
 import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
 import com.epam.esm.zotov.mjcschool.service.certificate.CertificateService;
 
@@ -15,7 +20,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 //TODO validator
-//TODO add HATEOAS to "pages"
 @RestController
 @RequestMapping("/certificates")
 public class CertificateControllerImpl implements CertificateController {
@@ -27,60 +31,89 @@ public class CertificateControllerImpl implements CertificateController {
     }
 
     @Override
-    public List<Certificate> getPage(int limit, long afterId) {
+    public ListDto<CertificateDto> getPage(int limit, long afterId) {
         List<Certificate> certificates = certificateService.getPage(limit, afterId);
-        if (certificates.isEmpty()) {
+        if (Objects.isNull(certificates) || certificates.isEmpty()) {
             throw new NoResourceFoundException();
+        } else {
+            List<CertificateDto> dtos = new ArrayList<>();
+            for (Certificate certificate : certificates) {
+                CertificateDto dto = new CertificateDto(certificate);
+                addCommonHateoasLinks(dto);
+                dtos.add(dto);
+            }
+            ListDto<CertificateDto> listDto = new ListDto<CertificateDto>(dtos);
+            long lastId = dtos.get(dtos.size() - 1).getCertificateId();
+            listDto.add(linkTo(methodOn(CertificateControllerImpl.class).getPage(limit, lastId)).withRel("next"));
+            long firstId = dtos.stream().findFirst().get().getCertificateId();
+            listDto.add(
+                    linkTo(methodOn(CertificateControllerImpl.class).getPage(limit, firstId - limit)).withRel("last"));
+            return listDto;
         }
-        for (Certificate certificate : certificates) {
-            addCommonHateoasLinks(certificate);
-        }
-        return certificates;
     }
 
     @Override
-    public Certificate getById(long targetId) {
+    public CertificateDto getById(long targetId) {
         Optional<Certificate> certificate = certificateService.getById(targetId);
         if (certificate.isEmpty()) {
             throw new NoResourceFoundException();
+        } else {
+            CertificateDto dto = new CertificateDto(certificate.get());
+            addCommonHateoasLinks(dto);
+            return dto;
         }
-        addCommonHateoasLinks(certificate.get());
-        return certificate.get();
     }
 
     @Override
-    public Certificate save(Certificate certificate) {
-        Certificate savedCertificate = certificateService.save(certificate).get();
-        addCommonHateoasLinks(savedCertificate);
-        return savedCertificate;
+    public CertificateDto save(CertificateDto certificate) {
+        Optional<Certificate> savedCertificate = certificateService.save(certificate.convertToCertificate());
+        if (savedCertificate.isEmpty()) {
+            throw new NoResourceFoundException();
+        } else {
+            CertificateDto dto = new CertificateDto(savedCertificate.get());
+            addCommonHateoasLinks(dto);
+            return dto;
+        }
     }
 
     @Override
     public void delete(long targetId) {
-        certificateService.delete(targetId);
+        if (!certificateService.delete(targetId)) {
+            throw new RequestNotExecutedException();
+        }
     }
 
     @Override
-    public Optional<Certificate> selectiveUpdate(long targetId, Certificate updatedCertificate) {
+    public CertificateDto selectiveUpdate(long targetId, CertificateDto updatedCertificate) {
         updatedCertificate.setCertificateId(targetId);
-        Optional<Certificate> returnedCertificate = certificateService.selectiveUpdate(updatedCertificate);
-        addCommonHateoasLinks(returnedCertificate.get());
-        return returnedCertificate;
+        Optional<Certificate> returnedCertificate = certificateService
+                .selectiveUpdate(updatedCertificate.convertToCertificate());
+        if (returnedCertificate.isEmpty()) {
+            throw new NoResourceFoundException();
+        } else {
+            CertificateDto dto = new CertificateDto(returnedCertificate.get());
+            addCommonHateoasLinks(dto);
+            return dto;
+        }
     }
 
     @Override
-    public List<Certificate> search(Map<String, String> searchParams) {
+    public List<CertificateDto> search(Map<String, String> searchParams) {
         List<Certificate> certificates = certificateService.search(searchParams);
         if (certificates.isEmpty()) {
             throw new NoResourceFoundException();
+        } else {
+            List<CertificateDto> dtos = new ArrayList<>();
+            for (Certificate certificate : certificates) {
+                CertificateDto dto = new CertificateDto(certificate);
+                addCommonHateoasLinks(dto);
+                dtos.add(dto);
+            }
+            return dtos;
         }
-        for (Certificate certificate : certificates) {
-            addCommonHateoasLinks(certificate);
-        }
-        return certificates;
     }
 
-    private void addCommonHateoasLinks(Certificate certificate) {
+    private void addCommonHateoasLinks(CertificateDto certificate) {
         certificate.add(linkTo(methodOn(CertificateControllerImpl.class).getById(certificate.getCertificateId()))
                 .withSelfRel());
     }

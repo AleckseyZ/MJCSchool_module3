@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Defines create, read and delete service methods.
+ * Defines create, read methods.
  */
-public interface CrdService<T> {
+public interface ReadService<T> {
     /**
      * Gets <code>T</code> type object with specified id and wraps it in the
      * <code>Optional</code>.
@@ -34,22 +34,4 @@ public interface CrdService<T> {
      *         limit number of objects.
      */
     List<T> getPage(int limit, long afterId);
-
-    /**
-     * Saves <code>T</code> object. Returns boolean indicating whether saving is
-     * successful or not.
-     * 
-     * @param object - object to be saved.
-     * @return <code>true</code> if object successfuly saved.
-     */
-    Optional<T> save(T object);
-
-    /**
-     * Deletes object with specified id. Returns boolean indicating whether deletion
-     * is successful or not.
-     * 
-     * @param object - object to be deleted.
-     * @return <code>true</code> if object successfuly deleted.
-     */
-    boolean delete(long id);
 }

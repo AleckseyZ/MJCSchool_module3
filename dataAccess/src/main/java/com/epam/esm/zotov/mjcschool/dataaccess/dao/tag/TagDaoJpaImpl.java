@@ -36,7 +36,7 @@ public class TagDaoJpaImpl implements TagDao {
         CriteriaQuery<Tag> criteriaQuery = criteriaBuilder.createQuery(Tag.class);
         Root<Tag> root = criteriaQuery.from(Tag.class);
 
-        criteriaQuery.select(root);
+        criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get(idParam)));
         List<Tag> resultList = entityManager.createQuery(criteriaQuery).getResultList();
 
         return resultList;
@@ -48,7 +48,8 @@ public class TagDaoJpaImpl implements TagDao {
         CriteriaQuery<Tag> criteriaQuery = criteriaBuilder.createQuery(Tag.class);
         Root<Tag> root = criteriaQuery.from(Tag.class);
 
-        criteriaQuery.select(root).where(criteriaBuilder.gt(root.get(idParam), afterId));
+        criteriaQuery.select(root).where(criteriaBuilder.gt(root.get(idParam), afterId))
+                .orderBy(criteriaBuilder.asc(root.get(idParam)));
         List<Tag> resultList = entityManager.createQuery(criteriaQuery).setMaxResults(limit).getResultList();
 
         return resultList;

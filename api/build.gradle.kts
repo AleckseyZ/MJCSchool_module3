@@ -15,4 +15,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-tomcat")
     implementation(project(":service"))
     implementation(project(":dataAccess"))
+    compileOnly("org.projectlombok:lombok:${Versions.lombokVer}")
+	annotationProcessor("org.projectlombok:lombok:${Versions.lombokVer}")
 }

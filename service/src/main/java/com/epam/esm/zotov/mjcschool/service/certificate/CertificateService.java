@@ -5,14 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
-import com.epam.esm.zotov.mjcschool.service.CrdService;
+import com.epam.esm.zotov.mjcschool.service.CreateService;
+import com.epam.esm.zotov.mjcschool.service.DeleteService;
+import com.epam.esm.zotov.mjcschool.service.ReadService;
 
 /**
  * Defines service methods operating with <code>Certificate</code> objects
  * 
  * @see CrdService
  */
-public interface CertificateService extends CrdService<Certificate> {
+public interface CertificateService extends ReadService<Certificate>, CreateService<Certificate>, DeleteService {
     /**
      * Updates <code>Certificate</code> modified fields using value from passed
      * <code>updatedCertificate</code>.

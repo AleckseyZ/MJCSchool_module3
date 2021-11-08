@@ -59,7 +59,7 @@ public class CertificateDaoJpaImpl implements CertificateDao {
         CriteriaQuery<Certificate> criteriaQuery = criteriaBuilder.createQuery(Certificate.class);
         Root<Certificate> root = criteriaQuery.from(Certificate.class);
 
-        criteriaQuery.select(root);
+        criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get(idParam)));
         List<Certificate> resultList = entityManager.createQuery(criteriaQuery).getResultList();
 
         return resultList;
@@ -71,7 +71,8 @@ public class CertificateDaoJpaImpl implements CertificateDao {
         CriteriaQuery<Certificate> criteriaQuery = criteriaBuilder.createQuery(Certificate.class);
         Root<Certificate> root = criteriaQuery.from(Certificate.class);
 
-        criteriaQuery.select(root).where(criteriaBuilder.gt(root.get(idParam), afterId));
+        criteriaQuery.select(root).where(criteriaBuilder.gt(root.get(idParam), afterId))
+                .orderBy(criteriaBuilder.asc(root.get(idParam)));
         List<Certificate> resultList = entityManager.createQuery(criteriaQuery).setMaxResults(limit).getResultList();
 
         return resultList;
@@ -102,7 +103,7 @@ public class CertificateDaoJpaImpl implements CertificateDao {
     public boolean delete(long id) {
         boolean isSuccessful = false;
         Optional<Certificate> target = getById(id);
-        if (target.isPresent()) {
+        if (target.isPresent() && (Objects.isNull(target.get().getOrders()) || target.get().getOrders().isEmpty())) {
             entityManager.remove(target.get());
             isSuccessful = true;
         }

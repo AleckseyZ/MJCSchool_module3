@@ -2,7 +2,9 @@ package com.epam.esm.zotov.mjcschool.dataaccess.dao.certificate;
 
 import java.util.Optional;
 
-import com.epam.esm.zotov.mjcschool.dataaccess.dao.CrdDao;
+import com.epam.esm.zotov.mjcschool.dataaccess.dao.CreateDao;
+import com.epam.esm.zotov.mjcschool.dataaccess.dao.DeleteDao;
+import com.epam.esm.zotov.mjcschool.dataaccess.dao.ReadDao;
 import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
 
 /**
@@ -10,7 +12,7 @@ import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
  * 
  * @see CrdDao
  */
-public interface CertificateDao extends CrdDao<Certificate> {
+public interface CertificateDao extends CreateDao<Certificate>, ReadDao<Certificate>, DeleteDao {
     /**
      * Updates <code>Certificate</code> in the data source. Will only update
      * modified fields.
