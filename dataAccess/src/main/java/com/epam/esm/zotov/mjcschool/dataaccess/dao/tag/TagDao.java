@@ -21,4 +21,6 @@ public interface TagDao extends CreateDao<Tag>, ReadDao<Tag>, DeleteDao {
      * @return <code>Optional</code> result of query.
      */
     Optional<Tag> getByName(String name);
+
+    public Optional<Tag> findFavoriteTagOfMostSpendingUser();
 }

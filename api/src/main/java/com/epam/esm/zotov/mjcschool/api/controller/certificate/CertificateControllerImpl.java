@@ -1,15 +1,18 @@
 package com.epam.esm.zotov.mjcschool.api.controller.certificate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.epam.esm.zotov.mjcschool.api.dto.CertificateDto;
 import com.epam.esm.zotov.mjcschool.api.dto.ListDto;
 import com.epam.esm.zotov.mjcschool.api.exception.NoResourceFoundException;
 import com.epam.esm.zotov.mjcschool.api.exception.RequestNotExecutedException;
+import com.epam.esm.zotov.mjcschool.api.validator.BasicValidator;
 import com.epam.esm.zotov.mjcschool.dataaccess.model.Certificate;
 import com.epam.esm.zotov.mjcschool.service.certificate.CertificateService;
 
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-//TODO validator
 @RestController
 @RequestMapping("/certificates")
 public class CertificateControllerImpl implements CertificateController {
@@ -36,18 +38,12 @@ public class CertificateControllerImpl implements CertificateController {
         if (Objects.isNull(certificates) || certificates.isEmpty()) {
             throw new NoResourceFoundException();
         } else {
-            List<CertificateDto> dtos = new ArrayList<>();
-            for (Certificate certificate : certificates) {
-                CertificateDto dto = new CertificateDto(certificate);
-                addCommonHateoasLinks(dto);
-                dtos.add(dto);
-            }
-            ListDto<CertificateDto> listDto = new ListDto<CertificateDto>(dtos);
-            long lastId = dtos.get(dtos.size() - 1).getCertificateId();
-            listDto.add(linkTo(methodOn(CertificateControllerImpl.class).getPage(limit, lastId)).withRel("next"));
-            long firstId = dtos.stream().findFirst().get().getCertificateId();
-            listDto.add(
-                    linkTo(methodOn(CertificateControllerImpl.class).getPage(limit, firstId - limit)).withRel("last"));
+            ListDto<CertificateDto> listDto = new ListDto<CertificateDto>(
+                    certificates.stream().map(cert -> new CertificateDto(cert)).collect(Collectors.toList()));
+
+            listDto.getList().stream().forEach(tagDto -> addCommonHateoasLinks(tagDto));
+            listDto.addNextPageLink(methodOn(CertificateControllerImpl.class).getPage(limit, limit + afterId));
+            listDto.addPreviousPageLink(methodOn(CertificateControllerImpl.class).getPage(limit, afterId - limit));
             return listDto;
         }
     }
@@ -66,6 +62,7 @@ public class CertificateControllerImpl implements CertificateController {
 
     @Override
     public CertificateDto save(CertificateDto certificate) {
+        BasicValidator.validatePositiveNumber(certificate.getPrice(), BigDecimal.valueOf(certificate.getDuration()));
         Optional<Certificate> savedCertificate = certificateService.save(certificate.convertToCertificate());
         if (savedCertificate.isEmpty()) {
             throw new NoResourceFoundException();
@@ -85,6 +82,12 @@ public class CertificateControllerImpl implements CertificateController {
 
     @Override
     public CertificateDto selectiveUpdate(long targetId, CertificateDto updatedCertificate) {
+        if (Objects.nonNull(updatedCertificate.getDuration())) {
+            BasicValidator.validatePositiveNumber(BigDecimal.valueOf(updatedCertificate.getDuration()));
+        }
+        if (Objects.nonNull(updatedCertificate.getDuration())) {
+            BasicValidator.validatePositiveNumber(updatedCertificate.getPrice());
+        }
         updatedCertificate.setCertificateId(targetId);
         Optional<Certificate> returnedCertificate = certificateService
                 .selectiveUpdate(updatedCertificate.convertToCertificate());
@@ -98,18 +101,28 @@ public class CertificateControllerImpl implements CertificateController {
     }
 
     @Override
-    public List<CertificateDto> search(Map<String, String> searchParams) {
+    public ListDto<CertificateDto> search(Map<String, String> searchParams) {
+        int limit = Integer.parseInt(searchParams.get("limit"));
+        int offset = Integer.parseInt(searchParams.get("offset"));
         List<Certificate> certificates = certificateService.search(searchParams);
-        if (certificates.isEmpty()) {
+        if (certificates.isEmpty() || certificates.size() < offset) {
             throw new NoResourceFoundException();
         } else {
+            if (certificates.size() > offset + limit) {
+                certificates = certificates.subList(offset, limit);
+            } else {
+                certificates = certificates.subList(offset, certificates.size());
+            }
             List<CertificateDto> dtos = new ArrayList<>();
             for (Certificate certificate : certificates) {
                 CertificateDto dto = new CertificateDto(certificate);
                 addCommonHateoasLinks(dto);
                 dtos.add(dto);
             }
-            return dtos;
+            ListDto<CertificateDto> listDto = new ListDto<CertificateDto>(dtos);
+            listDto.addNextPageLink(methodOn(CertificateControllerImpl.class).getPage(limit, limit + offset));
+            listDto.addPreviousPageLink(methodOn(CertificateControllerImpl.class).getPage(limit, offset - limit));
+            return listDto;
         }
     }
 

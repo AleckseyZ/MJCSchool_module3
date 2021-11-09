@@ -27,7 +27,7 @@ public interface ReadController<T> {
      *         limit number of objects.
      */
     @GetMapping
-    ListDto<T> getPage(@RequestParam int limit, @RequestParam(required = false) long afterId);
+    ListDto<T> getPage(@RequestParam int limit, @RequestParam long afterId);
 
     /**
      * Gets an object with a specified id. Might return an error message if no

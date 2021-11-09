@@ -12,4 +12,5 @@ import com.epam.esm.zotov.mjcschool.api.dto.TagDto;
  * @see ReadController
  */
 public interface TagController extends ReadController<TagDto>, CreateController<TagDto>, DeleteController {
+    public TagDto findFavoriteTagOfMostSpendingUser();
 }

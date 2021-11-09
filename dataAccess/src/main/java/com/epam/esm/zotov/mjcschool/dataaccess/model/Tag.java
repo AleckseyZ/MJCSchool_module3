@@ -1,5 +1,6 @@
 package com.epam.esm.zotov.mjcschool.dataaccess.model;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 import lombok.EqualsAndHashCode;
@@ -35,9 +38,17 @@ public class Tag {
     private String name;
     @OneToMany(mappedBy = "user")
     private @ToString.Exclude @EqualsAndHashCode.Exclude List<Order> orders = new ArrayList<>();
+    @Column(name = "last_update")
+    private @ToString.Exclude @EqualsAndHashCode.Exclude Instant lastUpdate;
 
     public Tag(Long tagId, String name) {
         this.tagId = tagId;
         this.name = name;
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void update() {
+        setLastUpdate(Instant.now());
     }
 }

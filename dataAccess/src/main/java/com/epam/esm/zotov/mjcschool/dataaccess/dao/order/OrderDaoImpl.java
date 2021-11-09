@@ -19,12 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @PropertySource("classpath:jpa.order.properties")
 public class OrderDaoImpl implements OrderDao {
     @Value("${jpa.order.idParam}")
     private String idParam;
+    @Value("${jpa.order.refundParam}")
+    private String refundParam;
     private EntityManager entityManager;
     private UserDao userDao;
     private CertificateDao certificateDao;
@@ -71,6 +74,7 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
+    @Transactional
     public Optional<Order> save(Order order) {
         Optional<User> user = userDao.getById(order.getUser().getUserId());
         Optional<Certificate> certificate = certificateDao.getById(order.getCertificate().getCertificateId());
@@ -83,5 +87,15 @@ public class OrderDaoImpl implements OrderDao {
             order = null;
         }
         return Optional.ofNullable(order);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Order> refund(long orderId) {
+        Optional<Order> order = getById(orderId);
+        if (order.isPresent()) {
+            order.get().setIsRefunded(true);
+        }
+        return order;
     }
 }

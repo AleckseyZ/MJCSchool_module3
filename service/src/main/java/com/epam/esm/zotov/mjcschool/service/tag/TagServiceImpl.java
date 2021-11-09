@@ -42,4 +42,9 @@ public class TagServiceImpl implements TagService {
     public boolean delete(long id) {
         return tagDao.delete(id);
     }
+
+    @Override
+    public Optional<Tag> findFavoriteTagOfMostSpendingUser() {
+        return tagDao.findFavoriteTagOfMostSpendingUser();
+    }
 }

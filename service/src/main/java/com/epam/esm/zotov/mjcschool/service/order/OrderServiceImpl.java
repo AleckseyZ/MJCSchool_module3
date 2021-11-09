@@ -37,4 +37,9 @@ public class OrderServiceImpl implements OrderService {
     public Optional<Order> save(Order order) {
         return orderDao.save(order);
     }
+
+    @Override
+    public Optional<Order> refund(long orderId) {
+        return orderDao.refund(orderId);
+    }
 }

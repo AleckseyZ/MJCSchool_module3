@@ -1,6 +1,7 @@
 package com.epam.esm.zotov.mjcschool.service.certificate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,19 +20,20 @@ import org.springframework.stereotype.Service;
 @PropertySource("classpath:search.properties")
 public class CertificateServiceImpl implements CertificateService {
     @Value("${search.tagName}")
-    String tagNameParam;
+    private String tagNameParam;
     @Value("${search.name}")
-    String nameParam;
+    private String nameParam;
     @Value("${search.description}")
-    String descriptionParam;
+    private String descriptionParam;
     @Value("${search.sortByName}")
-    String sortByNameParam;
+    private String sortByNameParam;
     @Value("${search.sortByDate}")
-    String sortByDateParam;
+    private String sortByDateParam;
     @Value("${search.ascending}")
-    String ascending;
+    private String ascending;
     @Value("${search.descending}")
-    String descending;
+    private String descending;
+    private static final String TAG_SEPARATOR = "+";
     private CertificateDao certificateDao;
 
     @Autowired
@@ -73,9 +75,9 @@ public class CertificateServiceImpl implements CertificateService {
     public List<Certificate> search(Map<String, String> searchParams) {
         List<Certificate> filteredCertificates = certificateDao.getAll();
 
-        String tagName = searchParams.get(tagNameParam);
-        if (Objects.nonNull(tagName)) {
-            filteredCertificates = searchByTagName(filteredCertificates, tagName);
+        String tagNames = searchParams.get(tagNameParam);
+        if (Objects.nonNull(tagNames)) {
+            filteredCertificates = searchByTags(filteredCertificates, Arrays.asList(tagNames.split(TAG_SEPARATOR)));
         }
 
         String name = searchParams.get(nameParam);
@@ -99,13 +101,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
 
         return filteredCertificates;
-    }
-
-    private List<Certificate> searchByTagName(List<Certificate> certificates, String desiredTagName) {
-        List<Certificate> fittingCertificates = certificates.stream().filter(
-                certificate -> certificate.getTags().stream().anyMatch(tag -> tag.getName().equals(desiredTagName)))
-                .collect(Collectors.toList());
-        return fittingCertificates;
     }
 
     private List<Certificate> searchByTags(List<Certificate> certificates, List<String> desiredTags) {

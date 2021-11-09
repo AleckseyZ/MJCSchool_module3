@@ -23,6 +23,8 @@ public class TagDaoJpaImpl implements TagDao {
     private String idParam;
     @Value("${jpa.tag.nameParam}")
     private String nameParam;
+    @Value("${jpa.native.specialSql}")
+    private String findFavoriteTagOfBiggestSpenderQuery;
     private EntityManager entityManager;
 
     @PersistenceContext
@@ -93,5 +95,11 @@ public class TagDaoJpaImpl implements TagDao {
             isSuccessful = true;
         }
         return isSuccessful;
+    }
+
+    @Override
+    public Optional<Tag> findFavoriteTagOfMostSpendingUser() {
+        List<Tag> result = entityManager.createNativeQuery(findFavoriteTagOfBiggestSpenderQuery, Tag.class).getResultList();
+        return result.stream().findFirst();
     }
 }

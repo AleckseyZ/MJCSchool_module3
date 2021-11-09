@@ -1,9 +1,9 @@
 package com.epam.esm.zotov.mjcschool.api.controller.tag;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.epam.esm.zotov.mjcschool.api.dto.ListDto;
 import com.epam.esm.zotov.mjcschool.api.dto.TagDto;
@@ -13,6 +13,7 @@ import com.epam.esm.zotov.mjcschool.dataaccess.model.Tag;
 import com.epam.esm.zotov.mjcschool.service.tag.TagService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -34,17 +35,12 @@ public class TagControllerImpl implements TagController {
         if (Objects.isNull(tags) || tags.isEmpty()) {
             throw new NoResourceFoundException();
         } else {
-            List<TagDto> dtos = new ArrayList<>();
-            for (Tag tag : tags) {
-                TagDto tagDto = new TagDto(tag);
-                addCommonHateoasLinks(tagDto);
-                dtos.add(tagDto);
-            }
-            ListDto<TagDto> listDto = new ListDto<TagDto>(dtos);
-            long lastId = dtos.get(dtos.size() - 1).getTagId();
-            listDto.add(linkTo(methodOn(TagControllerImpl.class).getPage(limit, lastId)).withRel("next"));
-            long firstId = dtos.stream().findFirst().get().getTagId();
-            listDto.add(linkTo(methodOn(TagControllerImpl.class).getPage(limit, firstId - limit)).withRel("last"));
+            ListDto<TagDto> listDto = new ListDto<TagDto>(
+                    tags.stream().map(tag -> new TagDto(tag)).collect(Collectors.toList()));
+
+            listDto.getList().stream().forEach(tagDto -> addCommonHateoasLinks(tagDto));
+            listDto.addNextPageLink(methodOn(TagControllerImpl.class).getPage(limit, limit + afterId));
+            listDto.addPreviousPageLink(methodOn(TagControllerImpl.class).getPage(limit, afterId - limit));
             return listDto;
         }
     }
@@ -70,6 +66,19 @@ public class TagControllerImpl implements TagController {
             TagDto tagDto = new TagDto(savedTag.get());
             addCommonHateoasLinks(tagDto);
             return tagDto;
+        }
+    }
+
+    @Override
+    @GetMapping("/favorite")
+    public TagDto findFavoriteTagOfMostSpendingUser() {
+        Optional<Tag> favoriteTag = tagService.findFavoriteTagOfMostSpendingUser();
+        if (favoriteTag.isEmpty()) {
+            throw new NoResourceFoundException();
+        } else {
+            TagDto dto = new TagDto(favoriteTag.get());
+            addCommonHateoasLinks(dto);
+            return dto;
         }
     }
 
